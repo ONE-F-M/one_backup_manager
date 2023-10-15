@@ -114,7 +114,7 @@ class GoogleDriveUploader():
                     }
                     media = MediaFileUpload(files.get('path')+each, resumable=True)
                     file_upload = self.drive_api.files().create(body=file_metadata, media_body=media, fields='id').execute()
-                    frappe.throw("ONE ERROR")
+                    
                 
                 self.create_log(1,url =filefolder.get('webViewLink'))
                 if self.settings_doc.send_email_notifications_for_successful_backups:
