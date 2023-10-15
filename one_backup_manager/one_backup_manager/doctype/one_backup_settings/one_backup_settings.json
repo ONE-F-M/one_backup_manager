@@ -10,8 +10,11 @@
   "enable_google_backups",
   "google_json_credentials",
   "backup_folder_name",
+  "column_break_yl6d0",
   "send_email_notifications_for_successful_backups",
-  "shared_email_address"
+  "shared_email_address",
+  "backup_with_files",
+  "number_of_backups"
  ],
  "fields": [
   {
@@ -46,13 +49,30 @@
    "fieldname": "shared_email_address",
    "fieldtype": "Data",
    "label": "Shared Email Address",
+   "mandatory_depends_on": "eval:doc.enable_google_backups",
    "options": "Email"
+  },
+  {
+   "default": "0",
+   "description": "If Checked, the Public and Private files will also be uploaded to Drive",
+   "fieldname": "backup_with_files",
+   "fieldtype": "Check",
+   "label": "Backup With Files"
+  },
+  {
+   "fieldname": "column_break_yl6d0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "number_of_backups",
+   "fieldtype": "Int",
+   "label": "Number of Backups"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-10-14 01:36:04.567468",
+ "modified": "2023-10-15 12:42:21.835555",
  "modified_by": "Administrator",
  "module": "One Backup Manager",
  "name": "One Backup Settings",
