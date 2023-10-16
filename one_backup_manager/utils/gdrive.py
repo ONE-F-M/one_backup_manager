@@ -51,7 +51,7 @@ class GoogleDriveUploader():
                     permission = {'type': 'user','role': 'writer','emailAddress': self.settings_doc.shared_email_address}
                     self.drive_api.permissions().create(fileId=folder.get('id'), body=permission).execute()
                 except:
-                    print("FAILED CREATING FOLDER")
+                    
                     frappe.log_error(message = frappe.get_traceback(),title="Error Creating Backup Folder")
             return folder
         
@@ -70,9 +70,7 @@ class GoogleDriveUploader():
                 removed_folders = sub_folders[(limit-1):]
                 for folder in removed_folders:
                     self.drive_api.files().delete(fileId=folder['id']).execute()
-                print(f"Cleared {len(removed_folders)} Folders")
-            else:
-                print("Current Folder Count Below Limit")
+                
 
     def create_log(self,complete,url=None):
         """Create a  Backup Log to reflect the status of the upload"""
@@ -87,12 +85,14 @@ class GoogleDriveUploader():
         if complete:
             log_doc.uploaded_files = self.settings_doc.backup_with_files
             log_doc.route = url
-            print("Set Options")
+            
         log_doc.insert()
         frappe.db.commit()
     
     
     def upload_file(self):
+        if not self.enable_google_backups:
+            return
         files = get_latest_files(with_files = self.settings_doc.backup_with_files)
         folder = self.fetch_folder_id()
         first_file = files.get('files')[0]
@@ -119,10 +119,9 @@ class GoogleDriveUploader():
                 self.create_log(1,url =filefolder.get('webViewLink'))
                 if self.settings_doc.send_email_notifications_for_successful_backups:
                     self.notify(success = True,message = f"Please note that the backup of {frappe.local.site} is successful")
-                print("DONE UPLOADING")
+                
             except:
-                print("ERROR OCCURED")
-                print(frappe.get_traceback())
+                
                 frappe.log_error(message = frappe.get_traceback(),title="Error Creating Backup")
                 self.notify(success= False,message = "<p>Please see error log from backup</p><br/>"+frappe.get_traceback())
                 self.create_log(0)

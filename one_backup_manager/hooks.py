@@ -113,13 +113,13 @@ app_license = "MIT"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
+scheduler_events = {
 #	"all": [
 #		"one_backup_manager.tasks.all"
 #	],
-#	"daily": [
-#		"one_backup_manager.tasks.daily"
-#	],
+	"daily": [
+		"one_backup_manager.one_backup_manager.doctype.one_backup_settings.one_backup_settings.create_backup"
+	],
 #	"hourly": [
 #		"one_backup_manager.tasks.hourly"
 #	],
@@ -129,7 +129,7 @@ app_license = "MIT"
 #	"monthly": [
 #		"one_backup_manager.tasks.monthly"
 #	],
-# }
+}
 
 # Testing
 # -------
