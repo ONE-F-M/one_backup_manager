@@ -1,9 +1,9 @@
 import frappe
 from google.oauth2 import service_account
 import os,io
+from frappe.utils.user import get_system_managers
 from datetime import datetime
 from frappe.utils import cstr
-from one_fm.processor import sendemail
 from googleapiclient.discovery import build
 from googleapiclient import discovery
 from googleapiclient.http import MediaFileUpload
@@ -13,11 +13,11 @@ class GoogleDriveUploader():
     def __init__(self):
         self.settings_doc = frappe.get_doc("One Backup Settings")
         self.set_access_token()
-        if not self.settings_doc.google_json_credentials:
-            frappe.throw("Please set a credentials file in ONE Backup Settings")
+        if not frappe.local.conf.google_drive_json_credentials:
+            frappe.throw("Please set a credentials file in Site Config")
     
     def set_access_token(self):
-        SERVICE_ACCOUNT_FILE = os.getcwd()+"/"+cstr(frappe.local.site) + self.settings_doc.google_json_credentials
+        SERVICE_ACCOUNT_FILE = os.getcwd()+"/"+cstr(frappe.local.site) + frappe.local.conf.google_drive_json_credentials
         
         SCOPES = ["https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
         self.credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
@@ -27,15 +27,21 @@ class GoogleDriveUploader():
         
     def notify(self,success = False,message = None):
         """Notify users of the outcome of the backup process"""
-        recipient = self.settings_doc.shared_email_address
+        recipient = [self.settings_doc.shared_email_address]
+        recipient+=get_system_managers(only_name=1)
+        
+        
         success_value = "Successful" if success else "Failed"
+        subject = f"Backup {success_value}!"
         if not recipient:
             recipient = frappe.conf.error_report_email
             if not recipient:
                 frappe.throw("No Email Recipient Set")
-        sendemail(recipients=[recipient],subject = f"Backup {success_value}!",message = message )
         
+        frappe.sendmail(recipients=recipient,subject = subject,message = message)
+       
     def fetch_folder_id(self):
+        """Fetch the folder ID of the drive used for backups, If one does not exist then create one"""
         folder_name = self.settings_doc.backup_folder_name
         if folder_name:
             folder_exists = self.drive_api.files().list(q=f"name='{folder_name}'").execute()['files']
@@ -91,7 +97,7 @@ class GoogleDriveUploader():
     
     
     def upload_file(self):
-        if not self.enable_google_backups:
+        if not self.settings_doc.enable_google_backups:
             return
         files = get_latest_files(with_files = self.settings_doc.backup_with_files)
         folder = self.fetch_folder_id()
