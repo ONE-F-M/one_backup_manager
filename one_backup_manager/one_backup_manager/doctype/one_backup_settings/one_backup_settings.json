@@ -1,0 +1,95 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-10-11 22:23:32.241668",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enable_google_backups",
+  "google_json_credentials",
+  "backup_folder_name",
+  "column_break_yl6d0",
+  "send_email_notifications_for_successful_backups",
+  "shared_email_address",
+  "backup_with_files",
+  "number_of_backups"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enable_google_backups",
+   "fieldtype": "Check",
+   "label": "Enable Google Backups"
+  },
+  {
+   "depends_on": "eval:doc.enable_google_backups",
+   "fieldname": "google_json_credentials",
+   "fieldtype": "Attach",
+   "label": "Google Json Credentials"
+  },
+  {
+   "depends_on": "eval:doc.enable_google_backups",
+   "description": "A custom name for the backup folder, If unset \"Backups\" will be used",
+   "fieldname": "backup_folder_name",
+   "fieldtype": "Data",
+   "label": "Backup Folder Name"
+  },
+  {
+   "default": "0",
+   "description": "By default emails are only sent when a backup fails",
+   "fieldname": "send_email_notifications_for_successful_backups",
+   "fieldtype": "Check",
+   "label": "Send Email Notifications for Successful Backups"
+  },
+  {
+   "depends_on": "eval:doc.enable_google_backups",
+   "description": "Email Address where the backup folder will  be shared. A group email address is recommended in this case",
+   "fieldname": "shared_email_address",
+   "fieldtype": "Data",
+   "label": "Shared Email Address",
+   "mandatory_depends_on": "eval:doc.enable_google_backups",
+   "options": "Email"
+  },
+  {
+   "default": "0",
+   "description": "If Checked, the Public and Private files will also be uploaded to Drive",
+   "fieldname": "backup_with_files",
+   "fieldtype": "Check",
+   "label": "Backup With Files"
+  },
+  {
+   "fieldname": "column_break_yl6d0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "number_of_backups",
+   "fieldtype": "Int",
+   "label": "Number of Backups"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-10-15 12:42:21.835555",
+ "modified_by": "Administrator",
+ "module": "One Backup Manager",
+ "name": "One Backup Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
