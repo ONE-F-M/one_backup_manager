@@ -13,7 +13,7 @@ class GoogleDriveUploader():
     def __init__(self):
         self.settings_doc = frappe.get_doc("One Backup Settings")
         self.set_access_token()
-        if not frappe.local.conf.google_drive_json_credentials:
+        if not frappe.local.conf.google_service_account_credentials:
             frappe.throw("Please set a credentials file in Site Config")
 
     def set_access_token(self):
