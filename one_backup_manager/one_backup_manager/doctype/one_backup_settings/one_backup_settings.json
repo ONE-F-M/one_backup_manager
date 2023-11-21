@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "enable_google_backups",
+  "enable_auto_backup_to_google_drive",
   "backup_folder_name",
   "column_break_yl6d0",
   "send_email_notifications_for_successful_backups",
@@ -63,12 +64,20 @@
    "fieldname": "number_of_backups",
    "fieldtype": "Int",
    "label": "Number of Backups"
+  },
+  {
+   "default": "0",
+   "depends_on": "enable_google_backups",
+   "description": "Check true for getting automatic backup daily to the google drive",
+   "fieldname": "enable_auto_backup_to_google_drive",
+   "fieldtype": "Check",
+   "label": "Enable Auto Backup to Google Drive"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-10-17 21:18:01.541306",
+ "modified": "2023-11-21 08:11:03.087217",
  "modified_by": "Administrator",
  "module": "One Backup Manager",
  "name": "One Backup Settings",

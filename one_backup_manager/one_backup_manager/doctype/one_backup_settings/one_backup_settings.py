@@ -9,12 +9,20 @@ from one_backup_manager.utils.utils import get_latest_backup_files
 from frappe.utils import now
 
 class OneBackupSettings(Document):
-	pass
+	def validate(self):
+		if not self.enable_google_backups and self.enable_auto_backup_to_google_drive:
+			self.enable_auto_backup_to_google_drive = False
+
+@frappe.whitelist()
+def auto_backup_to_gdrive():
+	if frappe.db.get_single_value("One Backup Settings", "enable_auto_backup_to_google_drive"):
+		frappe.throw("DDDDDD")
+		create_backup()
 
 @frappe.whitelist()
 def create_backup():
 	"""
-			Starts the backup process in the background
+		Starts the backup process in the background
 	"""
 	enqueue(
 		method=new_backup,
@@ -22,7 +30,7 @@ def create_backup():
 		timeout=6000,
 		event="Uploading Backups to Google Drive",
 		job_name="Uploading Backups to Google Drive",
-		now=True
+		now=False
 	)
 	return True
 
