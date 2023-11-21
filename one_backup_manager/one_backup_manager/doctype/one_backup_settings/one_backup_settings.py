@@ -16,7 +16,6 @@ class OneBackupSettings(Document):
 @frappe.whitelist()
 def auto_backup_to_gdrive():
 	if frappe.db.get_single_value("One Backup Settings", "enable_auto_backup_to_google_drive"):
-		frappe.throw("DDDDDD")
 		create_backup()
 
 @frappe.whitelist()
