@@ -7,7 +7,6 @@ from frappe.utils import cstr
 from googleapiclient.discovery import build
 from googleapiclient import discovery
 from googleapiclient.http import MediaFileUpload
-from one_backup_manager.utils.utils import get_latest_files
 
 class GoogleDriveUploader():
     def __init__(self):
@@ -40,25 +39,29 @@ class GoogleDriveUploader():
 
         frappe.sendmail(recipients=recipient,subject = subject,message = message)
 
-    def fetch_folder_id(self):
+    def fetch_folder_id(self, folder_name=False, share_with=False):
         """Fetch the folder ID of the drive used for backups, If one does not exist then create one"""
-        folder_name = self.settings_doc.backup_folder_name
+        if not folder_name:
+            folder_name = self.settings_doc.backup_folder_name
+        if not share_with:
+            share_with = self.settings_doc.shared_email_address
+
         if folder_name:
             folder_exists = self.drive_api.files().list(q=f"name='{folder_name}'").execute()['files']
             if folder_exists:
                 folder = folder_exists[0]
             else:
                 folder_metadata = {
-                "name": folder_name,
-                "mimeType": "application/vnd.google-apps.folder"
-                    }
+                    "name": folder_name,
+                    "mimeType": "application/vnd.google-apps.folder"
+                }
                 try:
                     folder = self.drive_api.files().create(body=folder_metadata, fields="id").execute()
-                    permission = {'type': 'user','role': 'writer','emailAddress': self.settings_doc.shared_email_address}
+                    permission = {'type': 'user','role': 'writer','emailAddress': share_with}
                     self.drive_api.permissions().create(fileId=folder.get('id'), body=permission).execute()
                 except:
 
-                    frappe.log_error(message = frappe.get_traceback(),title="Error Creating Backup Folder")
+                    frappe.log_error(message = frappe.get_traceback(),title="Error Creating Google Drive Folder")
             return folder
 
     def  validate_limit(self,parent_folder_id =None):
@@ -96,20 +99,20 @@ class GoogleDriveUploader():
         frappe.db.commit()
 
 
-    def upload_file(self):
+    def upload_file(self, files, file_name, folder_name=False, share_with=False):
         if not self.settings_doc.enable_google_backups:
             return
-        files = get_latest_files(with_files = self.settings_doc.backup_with_files)
-        folder = self.fetch_folder_id()
-        first_file = files.get('files')[0]
+        if not share_with:
+            share_with = self.settings_doc.shared_email_address
+        folder = self.fetch_folder_id(folder_name, share_with)
         file_folder_metadata = {
-                    "name": first_file.split('-')[0],
-                    "mimeType": "application/vnd.google-apps.folder",
-                    "parents": [folder.get('id')]
-                        }
+            "name": file_name,
+            "mimeType": "application/vnd.google-apps.folder",
+            "parents": [folder.get('id')]
+        }
         self.validate_limit(parent_folder_id = folder)
         filefolder = self.drive_api.files().create(body=file_folder_metadata, fields="id,webViewLink").execute()
-        permission = {'type': 'user','role': 'writer','emailAddress': self.settings_doc.shared_email_address}
+        permission = {'type': 'user','role': 'writer','emailAddress': share_with}
         self.drive_api.permissions().create(fileId=filefolder.get('id'), body=permission).execute()
         if files:
             try:
