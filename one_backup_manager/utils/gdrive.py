@@ -24,68 +24,22 @@ class GoogleDriveUploader():
         self.drive_api = build('drive', 'v3', credentials=self.credentials)
 
 
-    def notify(self,success = False,message = None):
+    def notify(self, success = False, message = None):
         """Notify users of the outcome of the backup process"""
-        recipient = [self.settings_doc.shared_email_address]
-        recipient+=get_system_managers(only_name=1)
-
+        recipients = [self.settings_doc.shared_email_address]
+        recipients+= get_system_managers(only_name=1)
 
         success_value = "Successful" if success else "Failed"
-        subject = f"Backup {success_value}!"
-        if not recipient:
-            recipient = frappe.conf.error_report_email
-            if not recipient:
-                frappe.throw("No Email Recipient Set")
+        subject = f"Google drive upload {success_value}!"
 
-        frappe.sendmail(recipients=recipient,subject = subject,message = message)
-
-    def fetch_folder_id(self, folder_name=False, share_with=False):
-        """Fetch the folder ID of the drive used for backups, If one does not exist then create one"""
-        if not folder_name:
-            folder_name = self.settings_doc.backup_folder_name
-        if not share_with:
-            share_with = self.settings_doc.shared_email_address
-
-        if folder_name:
-            folder_exists = self.drive_api.files().list(q=f"name='{folder_name}'").execute()['files']
-            if folder_exists:
-                folder = folder_exists[0]
-            else:
-                folder_metadata = {
-                    "name": folder_name,
-                    "mimeType": "application/vnd.google-apps.folder"
-                }
-                try:
-                    folder = self.drive_api.files().create(body=folder_metadata, fields="id").execute()
-                    permission = {'type': 'user','role': 'writer','emailAddress': share_with}
-                    self.drive_api.permissions().create(fileId=folder.get('id'), body=permission).execute()
-                except:
-
-                    frappe.log_error(message = frappe.get_traceback(),title="Error Creating Google Drive Folder")
-            return folder
-
-    def  validate_limit(self,parent_folder_id =None):
-        if not parent_folder_id:
-            parent_folder_id = self.fetch_folder_id()
-        if  self.settings_doc.enable_google_backups:
-            limit = self.settings_doc.number_of_backups
-            if not limit:
-                limit = 3
-            #list the folder in the root backup location
-
-            sub_folders = self.drive_api.files().list(q=f"'{parent_folder_id.get('id')}' in parents and mimeType = 'application/vnd.google-apps.folder'",orderBy="createdTime desc").execute()['files']
-
-            if len(sub_folders) > (limit-1):
-                removed_folders = sub_folders[(limit-1):]
-                for folder in removed_folders:
-                    self.drive_api.files().delete(fileId=folder['id']).execute()
-
+        if recipients and len(recipients) > 0:
+            frappe.sendmail(recipients=recipients, subject=subject, message=message)
 
     def create_log(self,complete,url=None):
         """Create a  Backup Log to reflect the status of the upload"""
         data = frappe._dict({
             'date':frappe.utils.getdate(),
-            'doctype':'Backup Log',
+            'doctype':'Google Drive Log',
             'status':'Completed' if complete else "Failed"
         })
         if not complete:
@@ -98,39 +52,30 @@ class GoogleDriveUploader():
         log_doc.insert()
         frappe.db.commit()
 
-
-    def upload_file(self, files, file_name, folder_name=False, share_with=False):
-        if not self.settings_doc.enable_google_backups:
-            return
-        if not share_with:
-            share_with = self.settings_doc.shared_email_address
-        folder = self.fetch_folder_id(folder_name, share_with)
-        file_folder_metadata = {
-            "name": file_name,
-            "mimeType": "application/vnd.google-apps.folder",
-            "parents": [folder.get('id')]
-        }
-        self.validate_limit(parent_folder_id = folder)
-        filefolder = self.drive_api.files().create(body=file_folder_metadata, fields="id,webViewLink").execute()
-        permission = {'type': 'user','role': 'writer','emailAddress': share_with}
-        self.drive_api.permissions().create(fileId=filefolder.get('id'), body=permission).execute()
-        if files:
+    def create_folder(self, folder_name, share_with, parents=[]):
+        folder_exists = self.drive_api.files().list(q=f"name='{folder_name}'").execute()['files']
+        if folder_exists:
+            folder = folder_exists[0]
+        else:
+            folder_metadata = {
+                "name": folder_name,
+                "mimeType": "application/vnd.google-apps.folder",
+            }
+            if parents and len(parents) > 0:
+                folder_metadata['parents'] = parents
             try:
-                for each in files.get('files'):
-                    file_metadata = {
-                        'name': each,
-                        "parents": [filefolder.get('id')]
-                    }
-                    media = MediaFileUpload(files.get('path')+each, resumable=True)
-                    file_upload = self.drive_api.files().create(body=file_metadata, media_body=media, fields='id').execute()
+                folder = self.drive_api.files().create(body=folder_metadata, fields="id, webViewLink").execute()
+                permission = {'type': 'user','role': 'writer','emailAddress': share_with}
+                self.drive_api.permissions().create(fileId=folder.get('id'), body=permission).execute()
+            except Exception as e:
+                frappe.log_error(message = frappe.get_traceback(),title="Error Creating Google Drive Folder")
+        return folder
 
-
-                self.create_log(1,url =filefolder.get('webViewLink'))
-                if self.settings_doc.send_email_notifications_for_successful_backups:
-                    self.notify(success = True,message = f"Please note that the backup of {frappe.local.site} is successful")
-
-            except:
-
-                frappe.log_error(message = frappe.get_traceback(),title="Error Creating Backup")
-                self.notify(success= False,message = "<p>Please see error log from backup</p><br/>"+frappe.get_traceback())
-                self.create_log(0)
+    def upload_file(self, file_name_with_ext, parents, file_path):
+        file_metadata = {
+            'name': file_name_with_ext,
+            "parents": parents
+        }
+        media = MediaFileUpload(file_path+file_name_with_ext, resumable=True)
+        file = self.drive_api.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
+        return file
