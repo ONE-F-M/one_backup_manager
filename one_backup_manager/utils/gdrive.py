@@ -52,7 +52,7 @@ class GoogleDriveUploader():
         log_doc.insert()
         frappe.db.commit()
 
-    def create_folder(self, folder_name, share_with, parents=[]):
+    def create_folder(self, folder_name, share_with=False, parents=[]):
         folder_exists = self.drive_api.files().list(q=f"name='{folder_name}'").execute()['files']
         if folder_exists:
             folder = folder_exists[0]
@@ -65,17 +65,22 @@ class GoogleDriveUploader():
                 folder_metadata['parents'] = parents
             try:
                 folder = self.drive_api.files().create(body=folder_metadata, fields="id, webViewLink").execute()
-                permission = {'type': 'user','role': 'writer','emailAddress': share_with}
-                self.drive_api.permissions().create(fileId=folder.get('id'), body=permission).execute()
+                self.create_permission(folder.get('id'), share_with)
             except Exception as e:
                 frappe.log_error(message = frappe.get_traceback(),title="Error Creating Google Drive Folder")
         return folder
 
-    def upload_file(self, file_name_with_ext, parents, file_path):
+    def upload_file(self, file_name_with_ext, parents, file_path, share_with=False):
         file_metadata = {
             'name': file_name_with_ext,
             "parents": parents
         }
         media = MediaFileUpload(file_path+file_name_with_ext, resumable=True)
         file = self.drive_api.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
+        self.create_permission(file.get('id'), share_with)
         return file
+
+    def create_permission(self, file_id, share_with):
+        if share_with:
+            permission = {'type': 'user','role': 'writer','emailAddress': share_with}
+            self.drive_api.permissions().create(fileId=file_id, body=permission).execute()
