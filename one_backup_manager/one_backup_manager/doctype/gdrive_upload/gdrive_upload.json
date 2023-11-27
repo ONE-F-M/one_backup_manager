@@ -1,0 +1,105 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2023-11-21 13:17:49.581633",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "parent_folder_name",
+  "file_folder_name",
+  "share_with",
+  "share_file_only",
+  "file",
+  "upload",
+  "google_drive_link",
+  "view_in_gdrive"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Series",
+   "options": "GDU-.MM.-.YYYY.-.####"
+  },
+  {
+   "fieldname": "parent_folder_name",
+   "fieldtype": "Data",
+   "label": "Parent Folder Name"
+  },
+  {
+   "fieldname": "file_folder_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "File Folder Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "file",
+   "fieldtype": "Attach",
+   "in_list_view": 1,
+   "label": "File",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:!doc.google_drive_link",
+   "fieldname": "upload",
+   "fieldtype": "Button",
+   "label": "Upload to Google Drive"
+  },
+  {
+   "fieldname": "google_drive_link",
+   "fieldtype": "Data",
+   "label": "Google Drive Link",
+   "read_only": 1
+  },
+  {
+   "depends_on": "google_drive_link",
+   "fieldname": "view_in_gdrive",
+   "fieldtype": "Button",
+   "label": "View in Google Drive"
+  },
+  {
+   "fieldname": "share_with",
+   "fieldtype": "Data",
+   "label": "Share With",
+   "options": "Email",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "share_file_only",
+   "fieldtype": "Check",
+   "label": "Share File Only"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-11-27 08:59:31.556119",
+ "modified_by": "Administrator",
+ "module": "One Backup Manager",
+ "name": "GDrive Upload",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
