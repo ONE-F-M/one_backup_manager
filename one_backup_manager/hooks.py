@@ -118,7 +118,7 @@ scheduler_events = {
 #		"one_backup_manager.tasks.all"
 #	],
 	"daily": [
-		"one_backup_manager.one_backup_manager.doctype.one_backup_settings.one_backup_settings.create_backup"
+		"one_backup_manager.one_backup_manager.doctype.one_backup_settings.one_backup_settings.auto_backup_to_gdrive"
 	],
 #	"hourly": [
 #		"one_backup_manager.tasks.hourly"

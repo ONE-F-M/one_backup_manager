@@ -69,7 +69,7 @@
  "modified": "2023-10-15 17:49:33.678878",
  "modified_by": "Administrator",
  "module": "One Backup Manager",
- "name": "Backup Log",
+ "name": "Google Drive Log",
  "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [

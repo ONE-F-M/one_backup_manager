@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestBackupLog(FrappeTestCase):
+class TestGoogleDriveLog(FrappeTestCase):
 	pass

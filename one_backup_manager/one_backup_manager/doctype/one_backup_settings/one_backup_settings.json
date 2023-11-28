@@ -8,7 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "enable_google_backups",
-  "google_json_credentials",
+  "enable_auto_backup_to_google_drive",
   "backup_folder_name",
   "column_break_yl6d0",
   "send_email_notifications_for_successful_backups",
@@ -25,12 +25,6 @@
   },
   {
    "depends_on": "eval:doc.enable_google_backups",
-   "fieldname": "google_json_credentials",
-   "fieldtype": "Attach",
-   "label": "Google Json Credentials"
-  },
-  {
-   "depends_on": "eval:doc.enable_google_backups",
    "description": "A custom name for the backup folder, If unset \"Backups\" will be used",
    "fieldname": "backup_folder_name",
    "fieldtype": "Data",
@@ -38,10 +32,11 @@
   },
   {
    "default": "0",
+   "depends_on": "eval:doc.enable_google_backups",
    "description": "By default emails are only sent when a backup fails",
    "fieldname": "send_email_notifications_for_successful_backups",
    "fieldtype": "Check",
-   "label": "Send Email Notifications for Successful Backups"
+   "label": "Send Notifications for Successful Backups"
   },
   {
    "depends_on": "eval:doc.enable_google_backups",
@@ -54,6 +49,7 @@
   },
   {
    "default": "0",
+   "depends_on": "eval:doc.enable_google_backups",
    "description": "If Checked, the Public and Private files will also be uploaded to Drive",
    "fieldname": "backup_with_files",
    "fieldtype": "Check",
@@ -64,15 +60,24 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval:doc.enable_google_backups",
    "fieldname": "number_of_backups",
    "fieldtype": "Int",
    "label": "Number of Backups"
+  },
+  {
+   "default": "0",
+   "depends_on": "enable_google_backups",
+   "description": "Check true for getting automatic backup daily to the google drive",
+   "fieldname": "enable_auto_backup_to_google_drive",
+   "fieldtype": "Check",
+   "label": "Enable Auto Backup to Google Drive"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-10-15 12:42:21.835555",
+ "modified": "2023-11-21 08:11:03.087217",
  "modified_by": "Administrator",
  "module": "One Backup Manager",
  "name": "One Backup Settings",
